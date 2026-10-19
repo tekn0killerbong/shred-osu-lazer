@@ -1,0 +1,108 @@
+SHRED - SKIN PROCEDURAL ET PNG OPTIONNELS
+
+EMPLACEMENT
+C:\Users\Utilisateur\source\osu-shred\ShredSkin\skin.ini
+Lancer dotnet run depuis la racine du projet osu-shred.
+Le lecteur cherche ShredSkin dans le dossier courant, puis pres de l'executable.
+En l'absence du fichier, il utilise les valeurs par defaut.
+Recharger le joueur/scene apres modification du skin (pas de hot reload).
+La section [Shred] est propre a notre prototype. Ce n'est pas une section
+standard de mania ni, pour l'instant, une integration au skin editor de lazer.
+
+GEOMETRIE
+ColumnWidth : une largeur ou 5 largeurs de frettes, dans l'ordre logique 1..5.
+ColumnSpacing : un espace ou 4 espaces entre les bords des frettes.
+NoteHeight : hauteur commune des notes et frettes.
+SectionGap : espace entre le dernier bord de frette et le premier pick.
+RowGap : distance verticale entre les centres des deux rangees.
+RowOffsetBottom : decalage horizontal manuel, seulement si AlignRows: false.
+FretX : position du centre de la premiere frette par rapport au centre du terrain.
+Les dimensions de colonnes sont exprimees sur un terrain de reference 1000x720.
+Les deux rangees utilisent les memes largeurs/espacements ; les notes et leurs
+recepteurs utilisent exactement le meme calcul.
+
+ANGLES
+ScrollAngleTop et ScrollAngleBottom decrivent le SENS DE DEPLACEMENT des notes.
+0 deg = droite ; +90 = haut ; 180 = gauche ; -90 = bas.
+Ce sont des angles trigonometriques : l'axe Y de l'ecran est inverse dans le code.
+Defauts : -65 en haut et +115 en bas (l'apparence precedente est conservee).
+Le haut accepte -170..-10 ; le bas +10..+170, pour conserver l'arrivee externe.
+Les cas horizontaux sont exclus : ils rendraient les cotes des frettes degeneres.
+Les cotes des parallelogrammes suivent automatiquement ces angles.
+ScrollLength : longueur des pistes visibles, sans changement de tempo ou jugement.
+
+HALO H/P
+HaloColour : RGB 0..255, or par defaut.
+HaloRadius : etendue du flou lumineux (0..30).
+HaloOpacity : intensite globale 0..1.
+HaloPulse : amplitude de la pulsation 0..0.5 ; 0 la desactive.
+Le fallback est un contour lumineux avec glow, pas un rectangle plein.
+
+REUSSITE / ERREUR / MISS
+HitExpand : facteur d'agrandissement du contour de reussite (1..4).
+HitFadeMs : duree de l'expansion et de la disparition.
+MissFadeMs : duree du fade des notes manquees.
+ShakeAmplitude : amplitude horizontale de la case fautive.
+ShakeMs : duree de la secousse et du flash d'erreur.
+ErrorColour : RGB du flash d'erreur.
+La penalite s'applique seulement a un PICK avec la mauvaise frette, dans la
+fenetre Miss de la premiere note non jugee sur cette corde.
+La note visee est consommee comme Miss : pas de deuxieme penalite a son expiration.
+Un pick hors de cette fenetre n'est pas penalise dans cette version.
+Pour une erreur a corde ouverte (aucune frette selectionnee), les cinq frettes
+secouent et une barre de flash couvre cette corde.
+Un simple appui/retrait de frette qui ne valide pas un HOPO ne casse pas le combo.
+
+LUMIERES SOUS LES NOTES
+ColourLight : teinte RGB de l'eclairage de touche.
+LightPosition : decalage le long de la piste ; positif vers les notes entrantes.
+LightLength : longueur des sprites de lumiere en direction de la piste.
+LightFadeMs : extinction apres relachement.
+AnimationFPS : frequence des animations PNG (1..120).
+Le fallback procedural eclaire le contour de la case. LightLength regle les
+sprites PNG de stage-light ; le fallback garde les dimensions de la case.
+Les lumieres sont sous les recepteurs/notes, avec un melange additif.
+Cette implementation s'inspire du placement/teintage de mania-stage-light,
+mais n'en reproduit pas toutes les conventions du format legacy.
+
+PNG OPTIONNELS A PLACER DIRECTEMENT DANS ShredSkin
+shred-hopo-halo.png : halo autour des notes H/P.
+shred-hit.png : effet d'expansion pour une frappe reussie.
+shred-error.png : flash de mauvaise frette.
+shred-stage-light.png : eclairage des touches maintenues.
+mania-stage-light.png est accepte comme fallback si shred-stage-light est absent.
+Chaque element peut utiliser une animation :
+shred-stage-light-0.png, shred-stage-light-1.png, shred-stage-light-2.png, etc.
+Meme suffixe -0, -1, ... pour les trois autres elements.
+Les indices commencent a 0, sont consecutifs, et sont limites a 120 images.
+Les frames sont bouclees pendant la duree de vie de l'effet.
+Une sequence numerotee a priorite sur l'image fixe du meme nom.
+Toutes les frames d'un element viennent d'une seule source.
+Recherche : dossier ShredSkin en premier, puis skin actif de lazer.
+Aucun PNG n'est necessaire : les formes par defaut sont generees en code.
+
+CONSEILS POUR KRITA
+Fond transparent, lumiere blanche/grise : le jeu applique la teinte configuree.
+Pour halo/hit/error, dessiner autour d'un RECTANGLE non incline ; le cisaillement
+est applique par le jeu. Ne pas dessiner l'inclinaison une seconde fois.
+L'interieur doit rester transparent pour garder le contour lisible.
+Les images sont etirees aux dimensions des notes (OPEN utilise une barre large).
+Pour stage-light, origine au milieu du bord du bas, lumiere vers le haut de
+l'image ; le jeu tourne le sprite vers la piste et applique ColourLight.
+Eviter de dessiner la lueur jusqu'au bord de l'image : laisser une marge transparente.
+
+VALIDATION
+50 tests reussis, dont geometrie/angles, lecture ini, limites de valeurs,
+fenetres des erreurs et combo du ScoreProcessor natif.
+Le rendu GPU et des PNG personnalises restent a essayer en jeu.
+En cas d'erreur de syntaxe ini, le message indique la ligne et le champ.
+Les inconnues sont ignorees ; les valeurs invalides sont refusees.
+
+AJUSTEMENT : RowGap: 34 rapproche les rangees (distance entre leurs centres).
+
+ALIGNEMENT AUTOMATIQUE (active par defaut)
+AlignRows: true
+Le decalage du bas suit la pente des cotes et RowGap.
+ScrollAngleBottom devient ScrollAngleTop + 180 ; RowOffsetBottom est ignore.
+Les picks se deplacent avec la rangee. Les deux rangees restent distinctes.
+AlignRows: false restaure les angles et le decalage independants.

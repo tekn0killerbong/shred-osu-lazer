@@ -1,0 +1,5 @@
+Test run for /workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/bin/Debug/net10.0/osu.Game.Rulesets.Shred.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: /workspace/scratch/4b2f9c01af6b/dev-tools/test-results/bindings.trx
+
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 37 ms - osu.Game.Rulesets.Shred.Tests.dll (net10.0)

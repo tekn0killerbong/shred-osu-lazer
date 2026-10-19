@@ -1,0 +1,51 @@
+Proposition experimentale Shred v1 - deux cordes, format .osu base mania
+
+La syntaxe standard des HitObjects est preservee. Les circles n'ont pas
+objectParams : x,y,time,type,hitSound,hitSample.
+Mode:3 et CircleSize:12 identifient ici un fichier source mania 12K.
+y est ignore par Shred. time reste en millisecondes de la piste audio.
+Les quatre picks d'une corde ne sont pas des colonnes de map.
+
+Colonnes 0..5 : corde du haut, OPEN puis frettes 1..5.
+Colonnes 6..11 : corde du bas, OPEN puis frettes 1..5.
+Formule : column = min(11, floor(x * 12 / 512)).
+Centres x conseilles :
+Haut OPEN=21, F1=64, F2=106, F3=149, F4=192, F5=234.
+Bas  OPEN=277, F1=320, F2=362, F3=405, F4=448, F5=490.
+Ces positions sont logiques et independantes du clavier, du skin et de la main.
+
+Exemple de note normale :
+64,192,5500,1,0,0:0:0:0:
+Corde du haut, frette 1, 5500 ms, circle, hitsounds par defaut.
+
+Le format officiel mania n'a pas de champ hammer-on / pull-off.
+La proposition ajoute une section explicite sans detourner y, hitSound,
+les flags de type, objectParams ou les noms de samples :
+
+[ShredArticulations]
+2,H
+3,P
+
+Les nombres sont les indices BASE ZERO des lignes d'objets, dans leur ordre
+original sous [HitObjects]. Les lignes vides et commentaires ne comptent pas.
+Sans annotation : note normale exigeant un pick.
+H : hammer-on. P : pull-off (tap admis, ou relachement d'une frette superieure).
+Les annotations sont appliquees AVANT le tri par temps.
+Lors d'une edition qui reordonne les objets, l'encodeur devra recalculer les indices.
+Cette convention est experimentale, pas une extension officielle du format osu!.
+
+Compatibilite :
+- Notre lecteur embarque comprend cette section.
+- Le decodeur habituel de lazer ne l'expose pas au ruleset a ce stade.
+- Une reexportation par un editeur mania peut perdre cette section.
+- Une map importee comme mania 12K puis convertie via le convertisseur Shred
+  actuel n'a que des picks ; ses articulations ne sont pas restaurees.
+- Ne pas diffuser ce prototype comme support complet des maps natives Shred.
+
+Source du format standard :
+https://osu.ppy.sh/wiki/en/Client/File_formats/osu_(file_format)
+Source epinglee des fenetres mania :
+https://github.com/ppy/osu/blob/2026.916.0/osu.Game.Rulesets.Mania/Scoring/ManiaHitWindows.cs
+ShredHitWindows reprend cette implementation sous licence MIT.
+Le mod Classic et les modificateurs de vitesse/difficulte ne sont pas exposes
+par le ruleset de cette version ; la demo utilise le comportement moderne a 1x.

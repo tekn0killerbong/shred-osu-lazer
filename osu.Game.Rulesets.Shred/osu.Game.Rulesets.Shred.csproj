@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Project">
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyTitle>osu.Game.Rulesets.Shred</AssemblyTitle>
+    <OutputType>Library</OutputType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RootNamespace>osu.Game.Rulesets.Shred</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(ShredOfficial)' == 'true'"><DefineConstants>$(DefineConstants);SHRED_OFFICIAL</DefineConstants></PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\**" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ppy.osu.Game" Version="2026.916.0" Condition="'$(ShredOfficial)' == 'true'" />
+    <ProjectReference Include="..\..\osu-shred-lazer\osu.Game\osu.Game.csproj" Condition="'$(ShredOfficial)' != 'true'" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ShredOfficial)' == 'true'">
+    <Compile Include="..\..\osu-shred-lazer\osu.Game\Screens\Edit\Components\PlaybackPitchControl.cs" Link="Compatibility\PlaybackPitchControl.cs" />
+    <Compile Include="..\..\osu-shred-lazer\osu.Game\Screens\Edit\Components\PlaybackRateControl.cs" Link="Compatibility\PlaybackRateControl.cs" />
+    <Compile Include="..\..\osu-shred-lazer\osu.Game\Screens\Edit\Timing\Multiselect\*.cs" Link="Compatibility\Timing\%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

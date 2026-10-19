@@ -1,0 +1,13 @@
+  Determining projects to restore...
+/workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/osu.Game.Rulesets.Shred.Tests.csproj : warning NU1903: Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x
+/workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred/osu.Game.Rulesets.Shred.csproj : warning NU1903: Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x [/workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/osu.Game.Rulesets.Shred.Tests.csproj]
+  All projects are up-to-date for restore.
+/workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/osu.Game.Rulesets.Shred.Tests.csproj : warning NU1903: Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x
+/workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred/osu.Game.Rulesets.Shred.csproj : warning NU1903: Package 'AutoMapper' 13.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x
+  osu.Game.Rulesets.Shred -> /workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred/bin/Debug/net10.0/osu.Game.Rulesets.Shred.dll
+  osu.Game.Rulesets.Shred.Tests -> /workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/bin/Debug/net10.0/osu.Game.Rulesets.Shred.Tests.dll
+Test run for /workspace/scratch/4b2f9c01af6b/build-shred/osu.Game.Rulesets.Shred.Tests/bin/Debug/net10.0/osu.Game.Rulesets.Shred.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: /workspace/scratch/4b2f9c01af6b/dev-tools/test-results/skin.trx
+
+Passed!  - Failed:     0, Passed:    50, Skipped:     0, Total:    50, Duration: 124 ms - osu.Game.Rulesets.Shred.Tests.dll (net10.0)
