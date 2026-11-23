@@ -16,6 +16,15 @@ namespace osu.Game.Rulesets.Shred.Beatmaps
 		private static readonly int[] customDivisors = Enumerable.Range(1, BindableBeatDivisor.MAXIMUM_DIVISOR)
 			.Except(BindableBeatDivisor.PREDEFINED_DIVISORS).ToArray();
 		public static double Precise(double time) => Math.Round(time * units_per_ms) / units_per_ms;
+		public static void PreserveTiming(ShredHitObject note)
+		{
+			// Canonicalise arithmetic noise without rounding onto a nearby grid.
+			// A deliberate translation can be off-grid after crossing a BPM boundary.
+			double end = Precise(note.EndTime);
+			double start = Precise(note.StartTime);
+			note.StartTime = start;
+			note.Duration = Math.Max(0, end - start);
+		}
 
 		public static double Snap(ControlPointInfo timing, int divisor, double time)
 			=> Precise(timing.GetClosestSnappedTime(time, divisor));

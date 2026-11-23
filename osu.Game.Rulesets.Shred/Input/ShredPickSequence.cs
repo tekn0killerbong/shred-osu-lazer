@@ -54,6 +54,14 @@ namespace osu.Game.Rulesets.Shred.Input
             foreach (var gesture in gestures) gesture.ForgetFret(row, mask);
         }
 
+        public int FretsForHeldPicks(int row, int picks)
+        {
+            int frets = 0;
+            foreach (var gesture in gestures)
+                if ((gesture.Mask & picks) != 0) frets |= gesture.FretsFor(row);
+            return frets;
+        }
+
         public void RememberFrets(int row, int mask, double chordTime, int physicalPicks)
         {
             // Releasing an old anchor to finish a four-note physical chord can

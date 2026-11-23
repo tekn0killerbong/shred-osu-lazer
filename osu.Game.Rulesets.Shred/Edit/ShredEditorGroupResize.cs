@@ -46,6 +46,7 @@ namespace osu.Game.Rulesets.Shred.Edit
                 if (Math.Abs(note.StartTime - start) < 0.001 && Math.Abs(note.EndTime - end) < 0.001) continue;
                 note.StartTime = start;
                 note.Duration = end - start;
+				note.TailSnapDivisor = composer.CurrentSnapDivisor;
                 note.ApplyDefaults(Beatmap.ControlPointInfo, Beatmap.Difficulty);
                 Beatmap.Update(note);
             }

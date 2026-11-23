@@ -13,15 +13,11 @@ namespace osu.Game.Rulesets.Shred.Edit
             return (Math.Min(from, to), Math.Max(from, to));
         }
 
-        public static bool Intersects(double start, double end, double from, double to,
-            float receiverX, float travelX, double visibleTime, double initialView, double currentView,
-            float left, float right, float halfWidth)
+        public static bool IntersectsColumn(double start, double end, double from, double to,
+            float originX, float left, float right, float halfWidth)
         {
             if (start > to + 0.5 || end < from - 0.5) return false;
-            double time = Math.Clamp(start, from, to);
-            float a = receiverX - travelX * (float)((time - initialView) / visibleTime);
-            float b = receiverX - travelX * (float)((time - currentView) / visibleTime);
-            return Math.Max(a, b) + halfWidth >= left && Math.Min(a, b) - halfWidth <= right;
+            return originX + halfWidth >= left && originX - halfWidth <= right;
         }
 
         public static double ScrollStrength(float y, float height, int originRow)

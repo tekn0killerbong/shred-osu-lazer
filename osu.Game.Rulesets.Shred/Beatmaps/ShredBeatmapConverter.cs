@@ -19,6 +19,7 @@ namespace osu.Game.Rulesets.Shred.Beatmaps
             converted.HitObjects = converted.HitObjects.Select(shred => new ShredHitObject
             {
                 StartTime = shred.StartTime, Duration = shred.Duration,
+				HeadSnapDivisor = shred.HeadSnapDivisor, TailSnapDivisor = shred.TailSnapDivisor,
                 Row = shred.Row, Fret = shred.Fret, Articulation = shred.Articulation,
                 Samples = playableSamples(shred)
             }).ToList();
@@ -28,7 +29,10 @@ namespace osu.Game.Rulesets.Shred.Beatmaps
 #endif
             );
             if (authored)
-                ShredGridTiming.Repair(converted.HitObjects, converted.ControlPointInfo);
+            {
+				ShredGridTiming.Repair(converted.HitObjects.Where(n => !ShredObjectSnap.HasGrid(n)), converted.ControlPointInfo);
+				foreach (ShredHitObject note in converted.HitObjects) ShredGridTiming.PreserveTiming(note);
+            }
             converted.HitObjects = ShredCoincidentHeads.RemoveDuplicates(converted.HitObjects);
 #if SHRED_OFFICIAL
             // EditorBeatmap chooses its processor from the playable map, not from
@@ -70,6 +74,7 @@ namespace osu.Game.Rulesets.Shred.Beatmaps
 			if (original is ShredHitObject shred)
             {
                 yield return new ShredHitObject { StartTime = shred.StartTime, Duration = shred.Duration,
+				HeadSnapDivisor = shred.HeadSnapDivisor, TailSnapDivisor = shred.TailSnapDivisor,
                     Row = shred.Row, Fret = shred.Fret, Articulation = shred.Articulation,
                     Samples = playableSamples(shred) };
                 yield break;

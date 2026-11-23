@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Shred.Compatibility
             if (!timelineSelectionInstalled) timelineSelectionInstalled = Edit.ShredTimelineSelection.Install(editor, beatmap);
         }
         [BackgroundDependencyLoader]
-        private void load(IEditorChangeHandler changeHandler, osu.Game.Beatmaps.BeatmapManager manager, osu.Framework.Platform.Storage storage, Edit.ShredHitObjectComposer composer)
+        private void load(IEditorChangeHandler changeHandler, osu.Game.Beatmaps.BeatmapManager manager, osu.Framework.Platform.Storage storage, Edit.ShredHitObjectComposer composer, osu.Game.Configuration.OsuConfigManager config)
         {
 			this.composer = composer;
 #if SHRED_OFFICIAL
@@ -39,6 +39,10 @@ namespace osu.Game.Rulesets.Shred.Compatibility
                 selectionHistory = histories.GetValue(beatmap, b => new ShredEditorHistory(b, history));
             }
             beatmap.HitObjectAdded += trimInsertedSustains;
+			config.BindWith(osu.Game.Configuration.OsuSetting.EditorAdjustExistingObjectsOnTimingChanges, composer.SnapState.MoveWithTiming);
+			composer.SnapState.CanEdit = () => selectionHistory?.CanProcessInsertions == true;
+			composer.SnapState.ResolveConflicts = composer.ResolveTailConflicts;
+			composer.SnapState.PointerHeld = () => GetContainingInputManager()?.CurrentState.Mouse.Buttons.IsPressed(osuTK.Input.MouseButton.Left) == true;
         }
         private void trimInsertedSustains(HitObject hitObject)
         {
@@ -83,6 +87,14 @@ namespace osu.Game.Rulesets.Shred.Compatibility
         }
         protected override void Dispose(bool isDisposing)
         {
+			if (composer != null)
+			{
+				composer.SnapState.CanEdit = null;
+				composer.SnapState.ResolveConflicts = null;
+				composer.SnapState.PointerHeld = null;
+				composer.SnapState.PendingMovement.Clear();
+				composer.SnapState.MoveWithTiming.UnbindAll();
+			}
             if (beatmap != null) beatmap.HitObjectAdded -= trimInsertedSustains;
             if (stack != null)
             {

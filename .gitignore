@@ -252,9 +252,7 @@ __pycache__/
 *.pyc
 
 # Cake #
-/tools/**
-/build/tools/**
-/build/temp/**
+/build/build/temp/**
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
@@ -340,3 +338,16 @@ inspectcode
 # Fody (pulled in by Realm) - schema file
 FodyWeavers.xsd
 **/FodyWeavers.xml
+
+# Données locales et fichier accidentel
+/headless/
+/osu-shred/scroll-speed.txt
+/hred for initial public release*
+
+# Shred local archives, logs and generated test data
+/local/
+/headless/
+**/headless/
+/scroll-speed.txt
+/Shred-extraction-*/
+*.bak

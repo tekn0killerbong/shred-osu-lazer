@@ -10,14 +10,18 @@ namespace osu.Game.Rulesets.Shred.UI
 	{
 		private readonly Box fill;
 		private readonly bool solid;
-		public ShredGlyph(Color4 colour, bool diamond = false, float shear = -70f / 150f, bool solid = false)
+        private readonly bool lightOnly;
+        private readonly Color4 idleColour;
+		public ShredGlyph(Color4 colour, bool diamond = false, float shear = -70f / 150f, bool solid = false, bool lightOnly = false)
 		{
 			this.solid = solid;
+            this.lightOnly = lightOnly;
+            idleColour = colour;
 			if (diamond)
 				Rotation = 45;
 			else
 				Shear = new Vector2(shear, 0);
-			fill = new Box { RelativeSizeAxes = Axes.Both, Colour = colour, Alpha = 0.12f };
+			fill = new Box { RelativeSizeAxes = Axes.Both, Colour = colour, Alpha = lightOnly ? 0 : 0.12f };
 			Add(fill);
 			if (solid)
 			{
@@ -29,12 +33,16 @@ namespace osu.Game.Rulesets.Shred.UI
 			Add(new Box { RelativeSizeAxes = Axes.Y, Width = 2, Colour = colour });
 			Add(new Box { RelativeSizeAxes = Axes.Y, Width = 2, Anchor = Anchor.TopRight, Origin = Anchor.TopRight, Colour = colour });
 		}
-		public void SetPressed(bool pressed)
+		public void SetPressed(bool pressed, Color4? pressedColour = null)
 		{
 			if (solid) return;
-			fill.Alpha = 0.12f;
-			if (pressed)
-				fill.Alpha = 0.8f;
+			fill.Colour = idleColour;
+            fill.Alpha = lightOnly ? 0 : 0.12f;
+            if (pressed && !lightOnly)
+            {
+                fill.Alpha = 0.8f;
+                if (pressedColour.HasValue) { fill.Colour = pressedColour.Value; fill.Alpha = 1; }
+            }
 		}
 	}
 }

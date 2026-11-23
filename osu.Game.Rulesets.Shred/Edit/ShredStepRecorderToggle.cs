@@ -10,7 +10,9 @@ namespace osu.Game.Rulesets.Shred.Edit
 {
     public partial class ShredStepRecorderToggle : FillFlowContainer
     {
-        public ShredStepRecorderToggle(BindableBool enabled, BindableBool returnOnPause)
+		public OsuCheckbox ReturnOnPauseToggle { get; private set; }
+		public OsuCheckbox SnapMovedToggle { get; private set; }
+        public ShredStepRecorderToggle(BindableBool enabled, BindableBool returnOnPause, BindableBool snapMovedObjects)
         {
             RelativeSizeAxes = Axes.X;
             AutoSizeAxes = Axes.Y;
@@ -27,7 +29,8 @@ namespace osu.Game.Rulesets.Shred.Edit
                     Spacing = new Vector2(0, 5),
                     Children = new Drawable[]
                     {
-                        new OsuCheckbox { RelativeSizeAxes = Axes.X, LabelText = "Return on pause", Current = returnOnPause }
+                        ReturnOnPauseToggle = new OsuCheckbox { RelativeSizeAxes = Axes.X, LabelText = "Return on pause", Current = returnOnPause },
+						SnapMovedToggle = new OsuCheckbox { RelativeSizeAxes = Axes.X, LabelText = "Snap moved/pasted objects", Current = snapMovedObjects }
                     }
                 }
             };

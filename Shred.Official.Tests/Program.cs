@@ -8,6 +8,13 @@ using osu.Game.Rulesets.Shred.Beatmaps;
 using osu.Game.Rulesets.Shred.Objects;
 using osu.Game.Rulesets.Shred.Gameplay;
 using Decoder = osu.Game.Beatmaps.Formats.Decoder;
+if (args.Length > 0 && args[0] == "--v69-gameplay") { GameplayChecks.RunRevision69(); return; }
+if (args.Length > 0 && args[0] == "--v68-snap") { Revision68SnapChecks.Run(); return; }
+if (args.Length > 0 && args[0] == "--v68-gameplay") { GameplayChecks.RunRevision68(); return; }
+if (args.Length > 0 && args[0] == "--v68-editor") { Revision54EditorRateChecks.Run(revision68: true); return; }
+if (args.Length > 0 && args[0] == "--v67-editor") { Revision54EditorRateChecks.Run(revision67: true); return; }
+if (args.Length > 0 && args[0] == "--v66-editor") { Revision54EditorRateChecks.Run(revision66: true); return; }
+if (args.Length > 0 && args[0] == "--v65-editor") { Revision54EditorRateChecks.Run(revision65: true); return; }
 if (args.Length > 0 && args[0] == "--v64-editor") { Revision54EditorRateChecks.Run(revision64: true); return; }
 if (args.Length > 0 && args[0] == "--v63-audio") { Revision63AudioChecks.Run(); return; }
 if (args.Length > 0 && args[0] == "--v63-editor-audio") { Revision54EditorRateChecks.Run(revision63: true); return; }

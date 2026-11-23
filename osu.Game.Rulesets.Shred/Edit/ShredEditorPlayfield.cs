@@ -65,6 +65,9 @@ namespace osu.Game.Rulesets.Shred.Edit
 		public double NextStep(double position) => ShredGridTicks.Next(beatmap.ControlPointInfo, beatDivisor.Value, position);
 		public double SnapTime(double position) => Beatmaps.ShredGridTiming.Snap(beatmap.ControlPointInfo, beatDivisor.Value, position);
 		public double CurrentTime => editorClock.CurrentTime;
+		// Visual passage is a timestamp comparison, not the 1 ms chord grouping
+		// tolerance. Keep the exact receiver position visible for every head.
+		public bool HasPassed(double time) => CurrentTime > time + 0.000002;
         private double visibleLeadTime = double.MaxValue;
         public double LastVisibleTime => CurrentTime + visibleLeadTime;
 		private float centreShift => Skin.OpenCentre + Skin.EffectiveRowOffsetBottom / 2;
@@ -224,7 +227,7 @@ namespace osu.Game.Rulesets.Shred.Edit
         // ending beneath it is already selected and therefore drawn on top.
         public bool HeadContains(ShredHitObject note, Vector2 screen)
         {
-            if (note.StartTime < CurrentTime - Gameplay.ShredChordRules.ChordTolerance || !ContainsScreen(screen)) return false;
+            if (HasPassed(note.StartTime) || !ContainsScreen(screen)) return false;
             Vector2 local = ToLocalSpace(screen);
             Vector2 head = PositionAt(note.IsWham ? 12 : note.Column, note.StartTime);
             if (note.IsWham)

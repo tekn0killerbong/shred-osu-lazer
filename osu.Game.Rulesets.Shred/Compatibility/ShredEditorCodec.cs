@@ -29,6 +29,8 @@ namespace osu.Game.Rulesets.Shred.Compatibility
             public int Fret;
             public ShredPracticeArticulation Articulation;
             public double Duration;
+			public int HeadSnapDivisor;
+			public int TailSnapDivisor;
             // Historical v1 field name. Since v46 it contains every playable sample:
             // the legacy encoder cannot retain auto-addition banks alongside a filename carrier.
             // Older v1 readers already expand this list without filtering sample names.
@@ -87,6 +89,8 @@ namespace osu.Game.Rulesets.Shred.Compatibility
                 ?? throw new FormatException("Marqueur Shred vide.");
             if (data.Row < 0 || data.Row > 1 || data.Fret < 0 || data.Fret > 5
                 || !Enum.IsDefined(data.Articulation) || !double.IsFinite(data.Duration) || data.Duration < 0
+                || data.HeadSnapDivisor < 0 || data.HeadSnapDivisor > Beatmaps.ShredObjectSnap.MaximumProvenanceDivisor
+                || data.TailSnapDivisor < 0 || data.TailSnapDivisor > Beatmaps.ShredObjectSnap.MaximumProvenanceDivisor
                 || data.NormalSamples == null || data.NormalSamples.Count > 64)
                 throw new FormatException("Données de note Shred invalides.");
             if (data.NormalSamples.Any(s => s.File?.StartsWith("shred-native-", StringComparison.Ordinal) == true))
@@ -130,7 +134,8 @@ namespace osu.Game.Rulesets.Shred.Compatibility
             {
                 var current = read(note.Samples[0]);
                 if (current.Row == note.Row && current.Fret == note.Fret
-                    && current.Articulation == note.Articulation && current.Duration == note.Duration)
+                    && current.Articulation == note.Articulation && current.Duration == note.Duration
+					&& current.HeadSnapDivisor == note.HeadSnapDivisor && current.TailSnapDivisor == note.TailSnapDivisor)
                     return;
             }
             var playable = PlayableSamples(editedSamples ?? note.Samples);
@@ -138,6 +143,7 @@ namespace osu.Game.Rulesets.Shred.Compatibility
             {
                 Row = note.Row, Fret = note.Fret, Articulation = note.Articulation,
                 Duration = note.Duration,
+				HeadSnapDivisor = note.HeadSnapDivisor, TailSnapDivisor = note.TailSnapDivisor,
                 NormalSamples = playable.Select(Sample.From).ToList()
             };
             string encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data)))
@@ -163,6 +169,7 @@ namespace osu.Game.Rulesets.Shred.Compatibility
             note = new ShredHitObject
             {
                 StartTime = source.StartTime, Duration = data.Duration,
+				HeadSnapDivisor = data.HeadSnapDivisor, TailSnapDivisor = data.TailSnapDivisor,
                 Row = data.Row, Fret = data.Fret, Articulation = data.Articulation,
                 Samples = PlayableSamples(source.Samples)
             };

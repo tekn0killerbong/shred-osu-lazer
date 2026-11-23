@@ -17,6 +17,7 @@ using osu.Game.Rulesets.Edit.Tools;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Shred.Gameplay;
+using osu.Game.Rulesets.Shred.Beatmaps;
 using osu.Game.Rulesets.Shred.Objects;
 using osu.Game.Rulesets.Shred.UI;
 using osu.Game.Rulesets.UI;
@@ -28,9 +29,9 @@ namespace osu.Game.Rulesets.Shred.Edit
 {
 	public enum ShredEditorAction
 	{
-		[Description("Type pick")]
+		[Description("Pick")]
 		Pick,
-		[Description("Type hammer pull")]
+		[Description("Hammer-pull")]
 		HammerPull,
 		[Category("Shred"), Description("Empty step")]
 		EmptyStep,
@@ -68,6 +69,8 @@ namespace osu.Game.Rulesets.Shred.Edit
 			new ShredCompositionTool("Hammer-pull", ShredPracticeArticulation.HammerPull)
 		};
 		public ShredStepRecorder StepRecorder { get; private set; }
+		public ShredEditorSnapState SnapState => ShredEditorSnapState.For(EditorBeatmap);
+		public int CurrentSnapDivisor => Dependencies.Get<osu.Game.Screens.Edit.BindableBeatDivisor>().Value;
 		public ShredPracticeArticulation? RecorderArticulation
 		{
 			get
@@ -98,7 +101,7 @@ namespace osu.Game.Rulesets.Shred.Edit
                 Child = StepRecorder = new ShredStepRecorder(recorderRuleset)
             });
 			Playback.RecorderEnabled.BindTo(StepRecorder.Enabled);
-			var recorderToggle = new ShredStepRecorderToggle(StepRecorder.Enabled, Playback.ReturnOnPause);
+			var recorderToggle = new ShredStepRecorderToggle(StepRecorder.Enabled, Playback.ReturnOnPause, SnapState.SnapMovedObjects);
 			LeftToolbox.Add(recorderToggle);
 			// Fill-flow layout order is independent of draw depth.
 			if (recorderToggle.Parent is FillFlowContainer flow)
@@ -109,6 +112,8 @@ namespace osu.Game.Rulesets.Shred.Edit
         public void BeginPlacementChange(ShredHitObject note)
         {
             EditorBeatmap.BeginChange();
+			note.HeadSnapDivisor = CurrentSnapDivisor;
+			note.TailSnapDivisor = CurrentSnapDivisor;
             placementChange = note;
             TrimSustainsAt(note);
         }
@@ -153,6 +158,7 @@ namespace osu.Game.Rulesets.Shred.Edit
                     && n.EndTime > note.StartTime && !ShredChordRules.SameChordTime(n.EndTime, note.StartTime)).ToArray())
             {
                 previous.Duration = note.StartTime - previous.StartTime;
+				previous.TailSnapDivisor = note.HeadSnapDivisor;
                 previous.ApplyDefaults(EditorBeatmap.ControlPointInfo, EditorBeatmap.Difficulty);
 #if SHRED_OFFICIAL
                 // Native paste's added callback runs after preprocessing. Keep
@@ -216,6 +222,7 @@ namespace osu.Game.Rulesets.Shred.Edit
                 {
                     Note.StartTime = Math.Max(0, Math.Min(start, end));
                     Note.Duration = Math.Abs(end - start);
+					Note.TailSnapDivisor = composer.CurrentSnapDivisor;
                     if (Note.IsWham) Note.Duration = Math.Max(composer.Grid.MinimumDuration(Note.StartTime), Note.Duration);
                     RefreshDuration();
                 }
@@ -342,9 +349,13 @@ namespace osu.Game.Rulesets.Shred.Edit
 		private int dragOriginRow;
 		private int dragOriginFret;
 		private double dragOriginTime;
+		private readonly Dictionary<ShredHitObject, ShredRhythmStamp> dragRhythms = new();
 		private bool dragWham;
 		private readonly HashSet<ShredHitObject> movedNotes = new HashSet<ShredHitObject>();
 		private bool selecting;
+        private bool selectionBothRows;
+        private bool marqueeRightClick;
+        private readonly float[] selectionColumnCentres = new float[6];
         private HashSet<HitObject> additiveSelection = new HashSet<HitObject>();
 		private ShredHitObject resizingNote;
 
@@ -359,6 +370,14 @@ namespace osu.Game.Rulesets.Shred.Edit
 		protected override SelectionHandler<HitObject> CreateSelectionHandler() => new ShredSelectionHandler();
 		protected override bool OnMouseDown(MouseDownEvent e)
 		{
+            if (e.Button == MouseButton.Right && selecting)
+            {
+                marqueeRightClick = true;
+                selectionBothRows = true;
+                UpdateSelectionFromDragBox(additiveSelection);
+                return true;
+            }
+            if (e.Button == MouseButton.Right) marqueeRightClick = false;
             if (e.Button == MouseButton.Left && composer.Grid.ContainsScreen(e.ScreenSpaceMousePosition))
                 composer.Grid.FocusRow(composer.Grid.RowAt(e.ScreenSpaceMousePosition));
             if (handleRangeSelection(e)) return true;
@@ -368,11 +387,14 @@ namespace osu.Game.Rulesets.Shred.Edit
 		}
 		protected override bool OnDragStart(DragStartEvent e)
 		{
+			if (e.Button != MouseButton.Left) return false;
 			if (modifierClick && e.Button == MouseButton.Left) return beginModifierMarquee(e);
 			movedNotes.Clear();
 			deselectOnClick = null;
 			selecting = false;
 			clippedDragOrigins.Clear();
+			dragRhythms.Clear();
+			var dragTiming = new ShredBeatTimeline(Beatmap.ControlPointInfo);
 			dragOriginMouse = e.ScreenSpaceMouseDownPosition;
 			dragOriginRow = composer.Grid.RowAt(dragOriginMouse);
 			dragWham = composer.Grid.IsWhamLane(dragOriginMouse);
@@ -404,6 +426,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 				int column = note.Column;
 				if (note.IsWham) column = 12;
 				clippedDragOrigins[note] = (note.StartTime, note.EndTime, column);
+				dragRhythms[note] = dragTiming.Capture(note);
 			}
 			additiveSelection = e.ControlPressed ? new HashSet<HitObject>(SelectedItems) : new HashSet<HitObject>();
 			bool accepted = base.OnDragStart(e);
@@ -413,6 +436,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 				selectionViewTime = composer.Grid.CurrentTime;
 				selectionStartPoint = composer.Grid.ToLocalSpace(e.ScreenSpaceMouseDownPosition);
 				selectionStartTime = composer.Grid.TimeAt(e.ScreenSpaceMouseDownPosition, dragOriginRow * 6);
+                captureSelectionColumns();
 				selectionCursor = e.ScreenSpaceMousePosition;
 				selectionColumn = composer.Grid.ColumnAt(e.ScreenSpaceMouseDownPosition);
 				if (selectionColumn < 0)
@@ -460,6 +484,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 			if (selecting) RememberSelectionGroup(marqueeGroup);
 			base.OnDragEnd(e);
 			clippedDragOrigins.Clear();
+			dragRhythms.Clear();
 			selecting = false;
 			movedNotes.Clear();
 		}
@@ -469,6 +494,15 @@ namespace osu.Game.Rulesets.Shred.Edit
 				updateResize();
 			if (selecting && CurrentPlacement == null && DragBox.State == Visibility.Visible)
 			{
+                // During edge scrolling the pointer can leave this drawable, so
+                // right-button events are no longer guaranteed to reach it.
+                bool bothRows = GetContainingInputManager().CurrentState.Mouse.IsPressed(MouseButton.Right);
+                if (bothRows != selectionBothRows)
+                {
+                    selectionBothRows = bothRows;
+                    if (bothRows) marqueeRightClick = true;
+                    UpdateSelectionFromDragBox(additiveSelection);
+                }
 				if (composer.Grid.ScrollAtEdge(selectionCursor, selectionColumn, Time.Elapsed, speed: 3))
                 {
                     captureSelectionEnd();
@@ -490,25 +524,35 @@ namespace osu.Game.Rulesets.Shred.Edit
 			selectionEndTime = composer.Grid.TimeAt(selectionCursor, selectionEndRow * 6);
 			selectionEndPoint = composer.Grid.ToLocalSpace(selectionCursor);
 		}
+        private void captureSelectionColumns()
+        {
+            selectionBothRows = false;
+            // Freeze the cross-section at the click. The visible rectangle stays
+            // rectangular, while its musical hit area follows the slanted lanes.
+            for (int fret = 0; fret < selectionColumnCentres.Length; fret++)
+                selectionColumnCentres[fret] = composer.Grid.PositionAt(dragOriginRow * 6 + fret, selectionStartTime).X;
+        }
 		protected override void UpdateSelectionFromDragBox(HashSet<HitObject> selectionBeforeDrag)
 		{
 			if (!selecting) return;
 			marqueeGroup.Clear();
 			float left = Math.Min(selectionStartPoint.X, selectionEndPoint.X);
 			float right = Math.Max(selectionStartPoint.X, selectionEndPoint.X);
-			foreach (var blueprint in SelectionBlueprints.Children.OfType<ShredSelectionBlueprint>().ToArray())
+			foreach (ShredHitObject note in Beatmap.HitObjects.OfType<ShredHitObject>())
 			{
-				ShredHitObject note = blueprint.HitObject;
 				bool included = false;
 				if (!note.IsWham)
 				{
-					bool rowIncluded = note.Row == dragOriginRow || selectionEndRow != dragOriginRow;
-                    var range = ShredMarquee.Range(note.Row, dragOriginRow, selectionEndRow,
+                    // Crossing the centre retains the existing two-grid gesture.
+                    // Right-hold additionally mirrors the origin grid's time range
+                    // into the other grid, independent of its visual row offset.
+                    bool rowIncluded = selectionBothRows || note.Row == dragOriginRow || selectionEndRow != dragOriginRow;
+                    int rangeRow = selectionBothRows ? dragOriginRow : note.Row;
+                    var range = ShredMarquee.Range(rangeRow, dragOriginRow, selectionEndRow,
                         selectionStartTime, selectionEndTime, selectionViewTime, selectionSampleViewTime);
-                    included |= rowIncluded && ShredMarquee.Intersects(note.StartTime, note.EndTime,
-                        range.from, range.to, composer.Grid.Receiver(note.Row, note.Fret).X,
-                        composer.Grid.Travel(note.Row).X, composer.Grid.VisibleTime,
-                        selectionViewTime, selectionSampleViewTime, left, right, composer.Grid.NoteSize(note.Fret).X / 2);
+                    included |= rowIncluded && ShredMarquee.IntersectsColumn(note.StartTime, note.EndTime,
+                        range.from, range.to, selectionColumnCentres[note.Fret],
+                        left, right, composer.Grid.NoteSize(note.Fret).X / 2);
 				}
 				else
 				{
@@ -571,6 +615,16 @@ namespace osu.Game.Rulesets.Shred.Edit
                 move.note.StartTime = move.time;
 				if (!move.note.IsWham) move.note.X = move.column;
 				movedNotes.Add(move.note);
+			}
+			if (composer.SnapState.SnapMovedObjects.Value)
+			{
+				double targetAnchor = composer.SnapTime(anchor + targetTime - dragOriginTime);
+				ShredGroupTiming.Apply(moves.Select(m => (m.note, dragRhythms[m.note])),
+					targetAnchor, new ShredBeatTimeline(Beatmap.ControlPointInfo));
+			}
+			foreach (var move in moves)
+			{
+				composer.SnapState.HandledGroups.Add(move.note);
 				Beatmap.Update(move.note);
 			}
 			composer.Grid.FocusRow(targetRow);

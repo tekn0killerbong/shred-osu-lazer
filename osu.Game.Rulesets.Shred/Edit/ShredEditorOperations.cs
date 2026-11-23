@@ -84,6 +84,7 @@ namespace osu.Game.Rulesets.Shred.Edit
                     .OrderBy(n => n.StartTime).FirstOrDefault();
                 if (next == null) continue;
                 ln.Duration = next.StartTime - ln.StartTime;
+				ln.TailSnapDivisor = next.HeadSnapDivisor;
                 update(ln);
             }
         }

@@ -22,6 +22,16 @@ namespace osu.Game.Rulesets.Shred.Input
                 return physical == InputKey.K || physical == InputKey.L || physical == InputKey.Semicolon ? InputKey.Quote : physical;
             }
         }
+        public static InputKey EmptyStep => CharacterKey('é', InputKey.Slash);
+        public static InputKey EmptyStepAlternate => CharacterKey('è', InputKey.Quote);
+        private static InputKey CharacterKey(char character, InputKey fallback)
+        {
+            if (!OperatingSystem.IsWindows()) return fallback;
+            IntPtr layout = GetKeyboardLayout(0);
+            short key = VkKeyScanExW(character, layout);
+            if (key == -1) return fallback;
+            return FromScanCode(MapVirtualKeyExW((uint)(key & 255), 4, layout) & 255, fallback);
+        }
         public static InputKey ModeIncrease
         {
             get

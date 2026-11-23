@@ -44,6 +44,12 @@ namespace osu.Game.Rulesets.Shred.Objects
 		public int Fret { get; set; }
 		public ShredPracticeArticulation Articulation { get; set; }
 		public double Duration { get; set; }
+		// Editor provenance, independent for the head and tail of a sustain.
+		public int HeadSnapDivisor { get; set; }
+		public int TailSnapDivisor { get; set; }
+		// Native clipboard serialisation carries this snapshot across maps/BPMs.
+		// Runtime/editor processing replaces it; legacy map encoders omit it.
+		public Beatmaps.ShredRhythmStamp EditorRhythm { get; set; }
 		public double EndTime => StartTime + Duration;
 		public bool IsLong => Duration > 0;
         public bool IncludeInTimingDistribution => !IsLong;

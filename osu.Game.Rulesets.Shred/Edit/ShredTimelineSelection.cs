@@ -103,6 +103,14 @@ namespace osu.Game.Rulesets.Shred.Edit
             return true;
         }
 
+        protected override void OnMouseUp(MouseUpEvent e)
+        {
+            // This overlay receives mouse-up before the native timeline commits
+            // its drag. Resolve only the final placement, then save one undo.
+            if (e.Button == MouseButton.Left) composer.SnapState.FinishMovement(beatmap);
+            base.OnMouseUp(e);
+        }
+
         protected override bool OnDragStart(DragStartEvent e)
         {
             if (!modifierGesture || e.Button != MouseButton.Left) return false;

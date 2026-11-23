@@ -54,8 +54,9 @@ namespace osu.Game.Rulesets.Shred.Edit
         private void loadPreferences()
         {
             preferences = new ShredRecorderConfig(host.Storage);
-            composer.Playback.ReturnOnPause.BindTo(preferences.GetBindable<bool>(ShredRecorderSetting.ReturnOnPause));
-            Enabled.BindTo(preferences.GetBindable<bool>(ShredRecorderSetting.Enabled));
+            preferences.BindWith(ShredRecorderSetting.ReturnOnPause, composer.Playback.ReturnOnPause);
+            preferences.BindWith(ShredRecorderSetting.Enabled, Enabled);
+			preferences.BindWith(ShredRecorderSetting.SnapMovedObjects, composer.SnapState.SnapMovedObjects);
         }
 		protected override void LoadComplete()
 		{
@@ -138,6 +139,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 			var note = new ShredHitObject
 			{
 				StartTime = entry.Start, Articulation = articulation(entry),
+				HeadSnapDivisor = divisor.Value, TailSnapDivisor = divisor.Value,
 				Samples = composer.CreateRecorderSamples(entry.Start)
 			};
 			if (note.IsWham) note.Duration = Math.Max(1, nextStep(entry.Start) - entry.Start);
@@ -172,6 +174,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 			if (note.Articulation != ShredPracticeArticulation.Pick || entry.Picked)
 				note.Articulation = articulation(entry);
 			if (entry.Sustain) note.Duration = Math.Max(0, entry.End - entry.Start);
+			if (entry.Sustain) note.TailSnapDivisor = divisor.Value;
 			if (note.IsWham) note.Duration = Math.Max(1, note.Duration);
 			note.ApplyDefaults(beatmap.ControlPointInfo, beatmap.Difficulty);
 			beatmap.Update(note);
@@ -488,6 +491,12 @@ namespace osu.Game.Rulesets.Shred.Edit
 			base.Dispose(isDisposing);
 		}
 
-		internal void FinishGridMemory() => gridMemory?.Dispose();
+		internal void FinishGridMemory()
+		{
+			gridMemory?.Dispose();
+			// A new editor can open before the outgoing screen is disposed.
+			// Flush its settings now instead of waiting for the delayed save.
+			if (preferences != null) ((osu.Framework.Configuration.IConfigManager)preferences).Save();
+		}
 	}
 }

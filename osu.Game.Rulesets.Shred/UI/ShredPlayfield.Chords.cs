@@ -153,6 +153,60 @@ namespace osu.Game.Rulesets.Shred.UI
             Array.Clear(armedPickCount, 0, armedPickCount.Length);
         }
 
+        private void tryBeginAnchoredStrum()
+        {
+            if (fullMembers != 0) return;
+            var next = targetNote(AllHitObjects.OfType<DrawableShredHitObject>());
+            if (next == null || !next.HitObject.TimingWindows.ResultFor(next.HeadOffset).IsHit()) return;
+            var chord = chordAt(next);
+            if (chord.Length < 2 || chord.Any(n => n.HeadJudged || n.HitObject.Fret == 0
+                || n.HitObject.Articulation != ShredPracticeArticulation.Pick)) return;
+
+            // Keep ordinary attacks and split-chord shredding as the primary
+            // path. This exception supplies exactly one already-held pick;
+            // every other pick must have been pressed for this same chord.
+            int held = heldPickMask;
+            if (BitOperations.PopCount((uint)held) != chord.Length) return;
+            int fresh = 0;
+            double pickTime = double.NegativeInfinity;
+            for (int row = 0; row < 2; row++)
+            {
+                if (GuitarHero && row == 0) continue;
+                int required = chord.Count(n => n.HitObject.Row == row);
+                if (pickCountForRow(held, row) != required) return;
+                if (armed[row]?.Intersect(chord).Any() != true || armedReturn[row]
+                    || !next.HitObject.TimingWindows.ResultFor(armedPickTime[row] - next.HitObject.StartTime).IsHit()) continue;
+                fresh |= armedPhysicalPicks[row];
+                pickTime = Math.Max(pickTime, armedPickTime[row]);
+            }
+            fresh &= held;
+            int anchor = held & ~fresh;
+            if (fresh == 0 || BitOperations.PopCount((uint)anchor) != 1
+                || eligibleFullChord(chord).Length != chord.Length) return;
+
+            for (int row = 0; row < 2; row++)
+            {
+                int other = pickSequence.FretsForHeldPicks(row, anchor);
+                int required = chord.Where(n => n.HitObject.Row == row)
+                    .Aggregate(0, (mask, n) => mask | ShredChordRules.MaskFor(n.HitObject.Fret));
+                // A pick assigned to a distinct, still-held fret group belongs
+                // to the existing split-chord technique. Do not turn its first
+                // mobile pick into an early full-chord attack.
+                if (other != 0 && (other & required) == 0) return;
+            }
+
+            // Promote only a complete, playable gesture. An incomplete or
+            // ineligible attempt continues through the normal input path,
+            // including late fret correction within the Great window.
+            fullAnchor = anchor;
+            fullMembers = held;
+            fullPressMask = fresh;
+            fullPickTime = pickTime;
+            fullTarget = chord;
+            fullReturning = true;
+            completeFullStrumPress();
+        }
+
         private bool fullStrumRelease(int released, int held)
         {
             if (fullMembers == 0) return false;
@@ -260,7 +314,10 @@ namespace osu.Game.Rulesets.Shred.UI
             var notes = AllHitObjects.OfType<DrawableShredHitObject>().Where(n => !n.HitObject.IsWham).ToArray();
             foreach (var note in notes) note.CheckExpiry();
             var next = targetNote(notes);
-            if (next == null) return;
+            // Like an ordinary shred return, releasing a held chord may only
+            // target a hittable head. Stopping a chord/LN in the next head's
+            // early miss band must not spend an involuntary attack on it.
+            if (next == null || !next.HitObject.TimingWindows.ResultFor(next.HeadOffset).IsHit()) return;
             var chord = chordAt(next);
             if (chord.Any(n => n.HitObject.Articulation != ShredPracticeArticulation.Pick)) return;
             var rows = new List<BufferedRowPick>();
@@ -268,8 +325,7 @@ namespace osu.Game.Rulesets.Shred.UI
             {
                 var members = chord.Where(n => n.HitObject.Row == row).ToArray();
                 if (members.Length == 0) continue;
-                var gesture = new BufferedRowPick { Row = row, Chord = members, Count = members.Length, AnchorMask = fullAnchor,
-                    Miss = members.Any(n => n.HitObject.TimingWindows.ResultFor(n.HeadOffset) == HitResult.Miss) };
+                var gesture = new BufferedRowPick { Row = row, Chord = members, Count = members.Length, AnchorMask = fullAnchor };
                 captureFrets(gesture);
                 rows.Add(gesture);
             }

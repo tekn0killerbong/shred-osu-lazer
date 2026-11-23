@@ -193,19 +193,19 @@ internal static partial class Program
             }),
             ("Marquee includes note edges immediately, without crossing their centres", () =>
             {
-                check(ShredMarquee.Intersects(1000,1000,900,1100,100,0,1000,0,0,110,130,24));
-                check(!ShredMarquee.Intersects(1000,1000,900,1100,100,0,1000,0,0,125,130,24));
+                check(ShredMarquee.IntersectsColumn(1000,1000,900,1100,100,110,130,24));
+                check(!ShredMarquee.IntersectsColumn(1000,1000,900,1100,100,125,130,24));
             }),
             ("Cross-row marquee retains musical range behind judgement after scrolling", () =>
             {
                 var range=ShredMarquee.Range(1,0,1,3000,3500,1000,2000);
                 equal(1000,range.from);equal(3500,range.to);
-                check(ShredMarquee.Intersects(1500,1500,range.from,range.to,100,50,1000,1000,2000,70,130,20));
+                check(ShredMarquee.IntersectsColumn(1500,1500,range.from,range.to,100,70,130,20));
             }),
             ("Marquee shrinks again and can select a sustain whose head is earlier", () =>
             {
-                check(!ShredMarquee.Intersects(1800,1800,1000,1500,100,0,1000,0,0,50,150,20));
-                check(ShredMarquee.Intersects(500,2000,1000,1500,100,0,1000,0,0,50,150,20));
+                check(!ShredMarquee.IntersectsColumn(1800,1800,1000,1500,100,50,150,20));
+                check(ShredMarquee.IntersectsColumn(500,2000,1000,1500,100,50,150,20));
             }),
             ("GOOD is registered with the native score processor", () =>
             {

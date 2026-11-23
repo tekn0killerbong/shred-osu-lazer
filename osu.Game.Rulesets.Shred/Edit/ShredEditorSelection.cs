@@ -6,6 +6,7 @@ using osu.Game.Audio;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Shred.Objects;
 using osu.Game.Rulesets.Shred.Gameplay;
+using osu.Game.Rulesets.Shred.Beatmaps;
 using osuTK.Input;
 
 namespace osu.Game.Rulesets.Shred.Edit
@@ -131,6 +132,7 @@ namespace osu.Game.Rulesets.Shred.Edit
             selectionViewTime = composer.Grid.CurrentTime;
             selectionStartPoint = composer.Grid.ToLocalSpace(e.ScreenSpaceMouseDownPosition);
             selectionStartTime = composer.Grid.TimeAt(e.ScreenSpaceMouseDownPosition, dragOriginRow * 6);
+            captureSelectionColumns();
             selectionColumn = composer.Grid.ColumnAt(e.ScreenSpaceMouseDownPosition);
             if (selectionColumn < 0) selectionColumn = dragOriginRow * 6;
             DragBox.Show();
@@ -149,6 +151,7 @@ namespace osu.Game.Rulesets.Shred.Edit
 
         protected override bool OnClick(ClickEvent e)
         {
+            if (e.Button == MouseButton.Right && marqueeRightClick) return true;
             if (deselectOnClick != null && e.Button == MouseButton.Left)
             {
                 var only = deselectOnClick;
@@ -181,6 +184,12 @@ namespace osu.Game.Rulesets.Shred.Edit
 
         protected override void OnMouseUp(MouseUpEvent e)
         {
+            if (e.Button == MouseButton.Right && marqueeRightClick)
+            {
+                selectionBothRows = false;
+                if (selecting) UpdateSelectionFromDragBox(additiveSelection);
+                return;
+            }
             if (!modifierClick && !tailHandleClick) base.OnMouseUp(e);
         }
 
@@ -188,6 +197,8 @@ namespace osu.Game.Rulesets.Shred.Edit
         {
             StartTime = note.StartTime, Duration = note.Duration,
             Row = note.Row, Fret = note.Fret, Articulation = note.Articulation,
+			HeadSnapDivisor = note.HeadSnapDivisor, TailSnapDivisor = note.TailSnapDivisor,
+			EditorRhythm = note.EditorRhythm,
             Samples = note.Samples.Select(s => s.With()).ToList()
         };
 
@@ -199,6 +210,8 @@ namespace osu.Game.Rulesets.Shred.Edit
                 if (selected.Length == 0) return;
                 clipboard.Clear();
                 clipboard.AddRange(selected.Select(clone));
+				var sourceTiming = new ShredBeatTimeline(Beatmap.ControlPointInfo);
+				foreach (ShredHitObject note in clipboard) note.EditorRhythm = sourceTiming.Capture(note);
                 if (key == Key.C) return;
                 Beatmap.BeginChange();
                 foreach (var note in selected) Beatmap.Remove(note);
@@ -219,11 +232,17 @@ namespace osu.Game.Rulesets.Shred.Edit
             }
             double cursor = EditorClock.CurrentTimeAccurate;
             var added = new List<ShredHitObject>();
+			ShredHitObject[] copies = source.OrderBy(n => n.StartTime).Select(clone).ToArray();
+			var destinationTiming = new ShredBeatTimeline(Beatmap.ControlPointInfo);
+			if (key == Key.D)
+				foreach (ShredHitObject note in copies) note.EditorRhythm = destinationTiming.Capture(note);
+			foreach (ShredHitObject note in copies) note.StartTime = Math.Max(0, target + note.StartTime - origin);
+			if (composer.SnapState.SnapMovedObjects.Value)
+				ShredGroupTiming.Apply(copies.Select(n => (n, n.EditorRhythm)), target, destinationTiming);
             Beatmap.BeginChange();
-            foreach (var item in source.OrderBy(n => n.StartTime))
+            foreach (var note in copies)
             {
-                ShredHitObject note = clone(item);
-                note.StartTime = Math.Max(0, target + item.StartTime - origin);
+				composer.SnapState.HandledGroups.Add(note);
                 composer.TrimSustainsAt(note);
                 foreach (var duplicate in Beatmap.HitObjects.OfType<ShredHitObject>()
                     .Where(n => n.IsWham == note.IsWham && (note.IsWham || n.Column == note.Column)

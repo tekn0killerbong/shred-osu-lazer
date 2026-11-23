@@ -78,7 +78,11 @@ namespace osu.Game.Rulesets.Shred.Edit
             previousSampleTime = sampleTime;
             // Keep time/audio updates alive for seeking, but do not lay out or draw
             // the whole song each frame. Long sustains remain visible until their tail.
-            if (HitObject.EndTime < field.CurrentTime - ShredChordRules.ChordTolerance || HitObject.StartTime > field.LastVisibleTime)
+            bool headPassed = field.HasPassed(HitObject.StartTime);
+            bool ended = field.HasPassed(HitObject.EndTime);
+            Alpha = 1;
+            if (ended) Alpha = 0;
+            if (ended || HitObject.StartTime > field.LastVisibleTime)
             {
                 clip.Alpha = 0;
                 return;
@@ -92,15 +96,13 @@ namespace osu.Game.Rulesets.Shred.Edit
             // slanted judgement edge rather than cutting it with a vertical mask.
             if (HitObject.IsWham) Position = field.PositionAt(column, Math.Max(HitObject.StartTime, field.CurrentTime));
             Size = HitObject.IsWham ? field.WhamSize : field.NoteSize(HitObject.Fret);
-            // No downstream fragment survives once the object has passed.
-            Alpha = HitObject.EndTime >= field.CurrentTime - ShredChordRules.ChordTolerance ? 1 : 0;
             Vector2 minimum = Vector2.Zero;
             Vector2 maximum = field.DrawSize;
             if (!HitObject.IsWham)
             {
                 float receiverY = field.Receiver(HitObject.Row, HitObject.Fret).Y;
                 float haloMargin = 0;
-                if (HitObject.Articulation == ShredPracticeArticulation.HammerPull && HitObject.StartTime >= field.CurrentTime - ShredChordRules.ChordTolerance)
+                if (HitObject.Articulation == ShredPracticeArticulation.HammerPull && !headPassed)
                     haloMargin = field.Skin.HaloRadius + 2;
                 // Only an unpassed hammer-pull head may glow beyond the case.
                 // As soon as its head passes, Layout hides the entire halo and
@@ -115,7 +117,7 @@ namespace osu.Game.Rulesets.Shred.Edit
             visual.Size = Size;
             visual.Position = DrawSize / 2 - clipMin;
             visual.Layout(field.PositionAt(column, HitObject.EndTime) - Position, field.Unit,
-                holding: HitObject.StartTime < field.CurrentTime - ShredChordRules.ChordTolerance, selected: EditorSelected, editor: true);
+                holding: headPassed, selected: EditorSelected, editor: true);
         }
     }
     public partial class DrawableShredEditorHead : DrawableHitObject<ShredHoldHead>

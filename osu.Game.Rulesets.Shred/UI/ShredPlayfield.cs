@@ -64,7 +64,6 @@ namespace osu.Game.Rulesets.Shred.UI
             public int Row;
             public int Count;
             public int AnchorMask;
-            public bool Miss;
             public DrawableShredHitObject[] Chord;
             public ShredPickSequence.Gesture Gesture;
             public ShredPickSequence.Gesture Partner;
@@ -303,6 +302,7 @@ namespace osu.Game.Rulesets.Shred.UI
                 tryJudge(row, false, true, previous);
                 if (armed[1 - row] != null) tryJudge(1 - row, false, true, strings[1 - row].FretMask);
                 completeFullStrumPress();
+                tryBeginAnchoredStrum();
             }
             else if (strings[inputRow].SetPick(action - 5, true))
             {
@@ -312,7 +312,11 @@ namespace osu.Game.Rulesets.Shred.UI
                 int bit = 1 << (inputRow * 4 + action - 5);
                 if (isExcessChordPress(bit)) return true;
                 pickSequence.Press(inputRow, action - 5, currentPickTarget(row), Time.Current, Clock?.Rate ?? 1);
-                if (!tryFullStrumPress(bit)) tryJudge(row, true, true, previous, bit);
+                if (!tryFullStrumPress(bit))
+                {
+                    tryJudge(row, true, true, previous, bit);
+                    tryBeginAnchoredStrum();
+                }
             }
             return true;
         }
@@ -548,11 +552,6 @@ namespace osu.Game.Rulesets.Shred.UI
             {
                 int row = gesture.Row;
                 int remaining = gesture.Count;
-                if (gesture.Miss)
-                {
-                    missChord(gesture.Chord, releaseTime);
-                    continue;
-                }
                 foreach (var note in gesture.Ready)
                 {
                     // A note independently played by a fret HP still consumes

@@ -3,7 +3,7 @@ using osu.Framework.Platform;
 
 namespace osu.Game.Rulesets.Shred.Edit
 {
-    public enum ShredRecorderSetting { Enabled, ReturnOnPause }
+    public enum ShredRecorderSetting { Enabled, ReturnOnPause, SnapMovedObjects }
 
     public class ShredRecorderConfig : IniConfigManager<ShredRecorderSetting>
     {
@@ -13,6 +13,7 @@ namespace osu.Game.Rulesets.Shred.Edit
         {
             SetDefault(ShredRecorderSetting.Enabled, false);
             SetDefault(ShredRecorderSetting.ReturnOnPause, false);
+			SetDefault(ShredRecorderSetting.SnapMovedObjects, false);
         }
     }
 }
