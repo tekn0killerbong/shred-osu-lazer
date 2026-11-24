@@ -2,6 +2,8 @@ to install, go to the [latest release](https://github.com/tekn0killerbong/shred-
 
 # shred for osu!lazer
 
+![shred gameplay]("C:\Users\Utilisateur\source\osu-shred\images\osu post shred demo image 1.png")
+
 ## Welcome to shred !
 
 shred is a custom ruleset made for the lazer installation of osu!, with the objective of optimizing, further developing and make available the concepts found within the Guitar Hero series on this platform. The project was vibe-coded with ChatGPT, so I have no idea how well or disastrously the code was constructed. But don't get disheartened too soon, as the ruleset seems to work pretty well and the vision and design is pretty much all human-inspired.
