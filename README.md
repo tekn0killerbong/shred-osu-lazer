@@ -2,7 +2,7 @@ to install, go to the [latest release](https://github.com/tekn0killerbong/shred-
 
 # shred for osu!lazer
 
-![shred gameplay]("C:\Users\Utilisateur\source\osu-shred\images\osu post shred demo image 1.png")
+![shred gameplay](images/osu%20post%20shred%20demo%20image%201.png)
 
 ## Welcome to shred !
 
