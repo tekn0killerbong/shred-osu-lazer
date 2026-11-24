@@ -8,6 +8,7 @@ using osu.Game.Rulesets.Shred.Beatmaps;
 using osu.Game.Rulesets.Shred.Objects;
 using osu.Game.Rulesets.Shred.Gameplay;
 using Decoder = osu.Game.Beatmaps.Formats.Decoder;
+if (args.Length > 0 && args[0] == "--v70-editor") { Revision54EditorRateChecks.Run(revision70: true); return; }
 if (args.Length > 0 && args[0] == "--v69-gameplay") { GameplayChecks.RunRevision69(); return; }
 if (args.Length > 0 && args[0] == "--v68-snap") { Revision68SnapChecks.Run(); return; }
 if (args.Length > 0 && args[0] == "--v68-gameplay") { GameplayChecks.RunRevision68(); return; }

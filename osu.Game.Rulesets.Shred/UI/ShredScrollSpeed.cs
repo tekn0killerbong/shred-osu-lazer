@@ -7,7 +7,7 @@ namespace osu.Game.Rulesets.Shred.UI
 {
 	public static class ShredScrollSpeed
 	{
-		private const int default_speed = 20;
+		private const int default_speed = 8;
 		// Maximum editor rate (2x) combined with the maximum DT rate (2x).
 		public const double MaximumPlaybackRate = 4;
 		public const double DefaultApproachTime = 11485.0 / default_speed;

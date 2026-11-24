@@ -134,10 +134,10 @@ internal partial class Revision54EditorRateChecks
 		ShredEditorPlayfield field = editor.ChildrenOfType<ShredEditorPlayfield>().Single();
 		EditorBeatmap map = editor.Dependencies.Get<EditorBeatmap>();
 		double reference = ShredEditorOperations.VisibleTime(map.TimelineZoom);
-		check(close(field.PlaybackRate, rate) && close(field.VisibleTime / rate, reference), "editor scroll keeps real-time zoom at rate " + rate);
+		check(close(field.PlaybackRate, rate) && close(field.VisibleTime, reference), "editor zoom is independent of playback rate " + rate);
 		foreach (int column in new[] { 1, 8, 12 })
 		{
-			double time = field.CurrentTime + 0.2 * reference * rate;
+			double time = field.CurrentTime + 0.2 * reference;
 			Vector2 position = field.PositionAt(column, time);
 			check(Math.Abs(field.TimeAt(field.ToScreenSpace(position), column) - time) < 0.05, "editor placement inverse remains correct at " + rate + ", column=" + column);
 		}

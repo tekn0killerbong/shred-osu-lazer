@@ -42,10 +42,10 @@ namespace osu.Game.Rulesets.Shred.Edit
 			return 0;
 		}
 		private readonly Container grid = new Container { RelativeSizeAxes = Axes.Both };
-		// The native editor zoom uses a fixed reference, independent of the gameplay preference.
+		// Playback rate affects the clock only. The native timeline zoom controls geometry.
 		public double PlaybackRate => ShredScrollSpeed.ValidPlaybackRate(
 			editorClock.AudioAdjustments.AggregateTempo.Value * editorClock.AudioAdjustments.AggregateFrequency.Value);
-		public double VisibleTime => ShredScrollSpeed.MapDuration(ShredEditorOperations.VisibleTime(beatmap.TimelineZoom), PlaybackRate);
+		public double VisibleTime => ShredEditorOperations.VisibleTime(beatmap.TimelineZoom);
 
 		// Use the full screen's gameplay dimensions, expressed in this viewport's
         // coordinates. Sidebar/timeline space must not change the size of the frets.

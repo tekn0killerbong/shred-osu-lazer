@@ -205,7 +205,7 @@ internal partial class Revision54EditorRateChecks
         ShredScrollSpeed.Adjust(-1); yield return () => true;
         check(slider.Current.Value == 27, "F3/F4 adjustment is reflected in settings");
         slider.Current.SetDefault(); yield return () => true;
-        check(ShredScrollSpeed.Speed == 20, "scroll reset restores default speed 20");
+        check(ShredScrollSpeed.Speed == 8, "scroll reset restores default speed 8");
         ShredScrollSpeed.Setting.Value = saved; Remove(wrapper, true);
     }
 }

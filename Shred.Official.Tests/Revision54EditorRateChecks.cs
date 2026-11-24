@@ -42,6 +42,7 @@ internal partial class Revision54EditorRateChecks : OsuGame
 	private bool revision66Only;
 	private bool revision67Only;
 	private bool revision68Only;
+	private bool revision70Only;
 	private bool restart57;
 	private osu.Framework.Input.UserInputManager pointerInput;
 	protected override osu.Framework.Input.UserInputManager CreateUserInputManager()
@@ -71,6 +72,7 @@ internal partial class Revision54EditorRateChecks : OsuGame
 		if (revision66Only) steps = runRevision66EditorSteps();
 		if (revision67Only) steps = runRevision67EditorSteps();
 		if (revision68Only) steps = runRevision68EditorSteps();
+		if (revision70Only) steps = runRevision70EditorSteps();
         Scheduler.AddDelayed(tick, 20, true);
     }
     private void tick()
@@ -83,6 +85,7 @@ internal partial class Revision54EditorRateChecks : OsuGame
             if (pending != null && !pending()) return;
             if (steps.MoveNext()) { pending = steps.Current; return; }
             passed = true;
+            if (revision70Only) { Console.WriteLine($"PASS v0.1.1 (v70): {checks} editor zoom and scroll-default checks"); Exit(); return; }
             if (revision68Only) { Console.WriteLine($"PASS v68: {checks} editor checks"); Exit(); return; }
             if (revision67Only) { Console.WriteLine($"PASS v67: {checks} musical group checks"); Exit(); return; }
             if (revision66Only) { Console.WriteLine($"PASS v66.1: {checks} group placement and timing checks"); Exit(); return; }
@@ -269,7 +272,7 @@ internal partial class Revision54EditorRateChecks : OsuGame
         return path;
     }
     public static void Run(bool creationOnly = false, bool timingOnly = false, bool composeOnly = false,
-		bool revision57 = false, bool revision58 = false, bool revision59 = false, bool revision60 = false, bool revision61 = false, string persistenceFolder = null, bool restart = false, bool revision62 = false, bool revision63 = false, bool revision64 = false, bool revision65 = false, bool revision66 = false, bool revision67 = false, bool revision68 = false)
+		bool revision57 = false, bool revision58 = false, bool revision59 = false, bool revision60 = false, bool revision61 = false, string persistenceFolder = null, bool restart = false, bool revision62 = false, bool revision63 = false, bool revision64 = false, bool revision65 = false, bool revision66 = false, bool revision67 = false, bool revision68 = false, bool revision70 = false)
     {
         string folder = Path.Combine(Path.GetTempPath(), "shred-v54-rates-" + Guid.NewGuid());
 		if (persistenceFolder != null) folder = persistenceFolder;
@@ -295,6 +298,7 @@ internal partial class Revision54EditorRateChecks : OsuGame
 		game.revision66Only = revision66;
 		game.revision67Only = revision67;
 		game.revision68Only = revision68;
+		game.revision70Only = revision70;
 		game.restart57 = restart;
         host.Run(game);
         if (!game.passed || game.failure != null) throw new Exception("Editor rate test failed; logs: " + folder, game.failure);

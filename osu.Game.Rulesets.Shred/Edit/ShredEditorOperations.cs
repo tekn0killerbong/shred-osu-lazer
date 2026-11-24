@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Shred.Gameplay;
 using osu.Game.Rulesets.Shred.Objects;
-using osu.Game.Rulesets.Shred.UI;
 
 namespace osu.Game.Rulesets.Shred.Edit
 {
 	public static class ShredEditorOperations
 	{
+		// Preserve the editor's 100% reference independently of gameplay scroll settings.
+		private const double base_visible_time = 11485.0 / 20;
+
 		public static int PasteRow(int row, int copiedRow, int targetRow) => copiedRow == targetRow ? row : 1 - row;
 
         public static double DragDuration(double originalStart, double originalEnd) => Math.Max(0, originalEnd - originalStart);
@@ -24,7 +26,7 @@ namespace osu.Game.Rulesets.Shred.Edit
         public static double VisibleTime(double zoom)
 		{
 			if (!double.IsFinite(zoom) || zoom <= 0) zoom = 1;
-			return ShredScrollSpeed.DefaultApproachTime / zoom;
+			return base_visible_time / zoom;
 		}
 
 		// Selecting a blueprint changes draw order. Never enumerate the live collection while selecting.
