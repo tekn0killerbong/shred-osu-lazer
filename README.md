@@ -1,12 +1,16 @@
 to install, go to the [latest release](https://github.com/tekn0killerbong/shred-osu-lazer/releases/latest) and download the .dll file. Then, place it in the rulesets folder of your osu!lazer folder. You can find it using the in-game button "Open osu! folder". Then start the game.
 
+Go to our [Discord](https://discord.gg/aGCEWtkkFU) to share and download maps.
+
 # shred for osu!lazer
 
 ![shred gameplay](images/osu%20post%20shred%20demo%20image%201.png)
 
 ## Welcome to shred !
 
-shred is a custom ruleset made for the lazer installation of osu!, with the objective of optimizing, further developing and make available the concepts found within the Guitar Hero series on this platform. The project was vibe-coded with ChatGPT, so I have no idea how well or disastrously the code was constructed. But don't get disheartened too soon, as the ruleset seems to work pretty well and the vision and design is pretty much all human-inspired.
+shred is a custom gamemode made for the lazer installation of osu!, with the objective of optimizing, further developing and make available the concepts found within the Guitar Hero and Rock Band series on this platform.
+
+The project was vibe-coded with ChatGPT. Don't call it AI slop too fast though. A lot of work was put into this and, on my end, it feels legitimate. Feel free to report any issue and I'll try my best to fix them.
 
 ## How to play
 
@@ -54,6 +58,11 @@ For the snap toggle, it's not related to the step recorder but only for selectio
 
 ---
 Make many maps my friends, hope you enjoy, and I'll see you on the shreds.
+
+
+## Licence
+
+Unless otherwise stated, original Shred contributions use the [non-commercial licence](LICENCE.md), copyright 2026 **tekno_killerbong**. Third-party components retain their respective licences: see the [third-party notices](THIRD_PARTY_NOTICES.md) and the [osu! licence](OSU-LICENCE.txt).
 
 
 ## Developer documentation
