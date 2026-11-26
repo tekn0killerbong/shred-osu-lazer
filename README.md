@@ -1,4 +1,4 @@
-##Installation
+## Installation
 
 to install, go to the [latest release](https://github.com/tekn0killerbong/shred-osu-lazer/releases/latest) and download the .dll file. Then, place it in the rulesets folder of your osu!lazer folder. You can find it using the in-game button "Open osu! folder". Then start the game.
 
