@@ -1,3 +1,5 @@
+##Installation
+
 to install, go to the [latest release](https://github.com/tekn0killerbong/shred-osu-lazer/releases/latest) and download the .dll file. Then, place it in the rulesets folder of your osu!lazer folder. You can find it using the in-game button "Open osu! folder". Then start the game.
 
 Go to our [Discord](https://discord.gg/aGCEWtkkFU) to share and download maps.
@@ -50,9 +52,9 @@ Here's some indications for the step recorder in shred :
 
 - Press frets to create notes. Grid will scroll automatically on release of last held note.
 
-- Press '/' or RIGHT while holding frets create long notes. Those won't make an automatic scroll
+- Press '/' or RIGHT while holding frets to create long notes. Those won't make an automatic scroll.
 
-- 'Return on pause' makes grid return on last position that you navigated or stopped on (ctrl-pause stops normally on current position)
+- 'Return on pause' makes grid return on last position that you navigated or stopped on (ctrl-pause stops normally on current position).
 
 For the snap toggle, it's not related to the step recorder but only for selections you paste on different BPM sections.
 
